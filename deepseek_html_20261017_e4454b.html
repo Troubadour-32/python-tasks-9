@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Занятие 3. Переменные и ввод данных — 20 задач</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root{
+    --bg: #eef2f9; --card: #ffffff; --ink: #0f172a; --muted: #475569;
+    --line: #e2e8f0; --brand: #3b82f6; --brand-d: #1d4ed8;
+    --ok: #10b981; --warn: #f59e0b; --danger: #ef4444;
+  }
+  body{
+    font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
+    background: var(--bg); color: var(--ink);
+    line-height: 1.6; padding: 1.5rem 1rem;
+  }
+  .wrap{ max-width: 1080px; margin: 0 auto; }
+
+  header.top{
+    background: linear-gradient(120deg, #1e3a8a, #3b82f6);
+    color: #fff; padding: 1.5rem 1.8rem; border-radius: 22px;
+    box-shadow: 0 12px 30px -14px rgba(0,0,0,.4); margin-bottom: 1.2rem;
+  }
+  header.top h1{ font-size: 1.5rem; letter-spacing: -.4px; }
+  header.top p{ opacity: .92; font-size: .95rem; margin-top: .3rem; }
+
+  .status-bar{
+    background: #fff; border: 1px solid var(--line); border-radius: 16px;
+    padding: .8rem 1.1rem; margin-bottom: 1.2rem;
+    display: flex; justify-content: space-between; align-items: center;
+    gap: 1rem; flex-wrap: wrap;
+    box-shadow: 0 8px 20px -18px rgba(15,23,42,.3);
+    position: sticky; top: .5rem; z-index: 30;
+  }
+  .status-bar .prog{ font-weight: 600; color: var(--brand-d); }
+  .status-bar .prog span{ color: var(--ok); }
+  .status-bar .badge-info{ font-size: .85rem; color: var(--muted); }
+
+  .filter-bar{
+    background: #fff; border: 1px solid var(--line); border-radius: 16px;
+    padding: .6rem .9rem; margin-bottom: 1rem;
+    display: flex; gap: .4rem; flex-wrap: wrap; align-items: center;
+  }
+  .filter-bar b{ font-size: .9rem; color: var(--muted); margin-right: .3rem; }
+  .filter-bar button{
+    border: 1px solid var(--line); background: #f8fafc; color: var(--ink);
+    padding: .35rem .8rem; border-radius: 999px; cursor: pointer;
+    font-size: .85rem; font-weight: 600;
+  }
+  .filter-bar button.active{ background: var(--brand); color: #fff; border-color: var(--brand); }
+
+  .task{
+    background: var(--card); border: 1px solid var(--line); border-radius: 20px;
+    padding: 1.4rem 1.6rem; margin-bottom: 1.4rem;
+    box-shadow: 0 14px 30px -26px rgba(15,23,42,.35);
+    transition: border-color .2s, background .2s;
+  }
+  .task.solved{
+    border-color: var(--ok);
+    background: linear-gradient(180deg, #f0fdf4 0%, #ffffff 60%);
+  }
+  .task.hidden{ display: none; }
+
+  .task-head{
+    display: flex; justify-content: space-between; align-items: flex-start;
+    gap: 1rem; flex-wrap: wrap; margin-bottom: .8rem;
+  }
+  .task-title{
+    font-size: 1.15rem; font-weight: 700; color: var(--ink);
+    display: flex; align-items: center; gap: .55rem; flex-wrap: wrap;
+  }
+  .task-title .num{
+    background: var(--brand); color: #fff; min-width: 2rem; height: 2rem;
+    padding: 0 .6rem; border-radius: 10px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: .95rem;
+  }
+  .difficulty{
+    font-size: .78rem; padding: .2rem .65rem; border-radius: 999px;
+    font-weight: 700; letter-spacing: .3px;
+  }
+  .diff-1{ background: #dcfce7; color: #166534; }
+  .diff-2{ background: #fef3c7; color: #92400e; }
+  .diff-3{ background: #fee2e2; color: #991b1b; }
+
+  .tag-input{
+    font-size: .72rem; padding: .15rem .55rem; border-radius: 999px;
+    background: #e0e7ff; color: #3730a3; font-weight: 700;
+  }
+
+  .task-desc{ color: #1e293b; margin-bottom: .9rem; font-size: 1rem; }
+  .task-desc code{
+    background: #eef2f6; padding: .1rem .45rem; border-radius: 6px;
+    font-family: 'JetBrains Mono', Consolas, monospace; font-size: .9em;
+  }
+
+  .io-block{
+    background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 12px;
+    padding: .7rem 1rem; margin-bottom: .9rem; font-size: .9rem;
+  }
+  .io-block b{ color: var(--brand-d); }
+  .io-block pre{
+    background: #0f172a; color: #e2e8f0; padding: .6rem .8rem;
+    border-radius: 8px; margin: .35rem 0 0;
+    font-family: 'JetBrains Mono', monospace; font-size: .85rem;
+    overflow-x: auto; white-space: pre-wrap;
+  }
+
+  .stdin-block{
+    background: #fffbeb; border: 1px dashed #fcd34d; border-radius: 12px;
+    padding: .6rem .9rem; margin-bottom: .9rem; font-size: .9rem;
+  }
+  .stdin-block label{ font-weight: 600; color: #92400e; display: block; margin-bottom: .3rem; }
+  .stdin-block textarea{
+    width: 100%; background: #fff; border: 1px solid #fcd34d;
+    border-radius: 8px; padding: .5rem .7rem;
+    font-family: 'JetBrains Mono', monospace; font-size: .9rem;
+    min-height: 44px; resize: vertical;
+  }
+
+  .editor-wrap{
+    display: flex; gap: 0; margin-bottom: .8rem;
+    border: 1px solid #1e293b; border-radius: 12px; overflow: hidden;
+    background: #0f172a;
+    font-family: 'JetBrains Mono', Consolas, monospace;
+    font-size: 14px; line-height: 1.55;
+    position: relative;
+  }
+  .line-numbers{
+    background: #1e293b; color: #64748b; padding: .7rem .6rem;
+    text-align: right; user-select: none; font-size: 13px;
+    line-height: 1.55; min-width: 2.8rem; white-space: pre;
+    overflow: hidden;
+  }
+  .editor-wrap textarea{
+    flex: 1; background: transparent; color: #e2e8f0; border: none;
+    outline: none; padding: .7rem .9rem; resize: vertical;
+    font-family: inherit; font-size: inherit; line-height: inherit;
+    min-height: 130px; tab-size: 4; white-space: pre;
+    overflow-wrap: normal; overflow-x: auto;
+    caret-color: #60a5fa;
+  }
+  .editor-wrap textarea::selection{ background: #3b82f6; color: #fff; }
+  .editor-wrap textarea:focus{ background: rgba(59,130,246,.05); }
+
+  .actions{
+    display: flex; gap: .55rem; flex-wrap: wrap; margin-top: .4rem;
+  }
+  button{
+    font-family: inherit; border: 1px solid var(--line);
+    background: #f1f5f9; color: var(--ink);
+    padding: .5rem 1rem; border-radius: 10px; cursor: pointer;
+    font-size: .92rem; font-weight: 600; transition: all .15s;
+  }
+  button:hover{ background: #e2e8f0; }
+  button.primary{
+    background: var(--brand); color: #fff; border-color: var(--brand);
+  }
+  button.primary:hover{ background: var(--brand-d); }
+  button.ghost{ background: #fff; }
+  button.hint-btn{
+    background: #fef9e7; border-color: #fcd34d; color: #92400e;
+  }
+  button.hint-btn:hover{ background: #fef3c7; }
+
+  .output{
+    margin-top: .7rem; border-radius: 12px; padding: .85rem 1rem;
+    font-size: .93rem; line-height: 1.5; display: none;
+  }
+  .output.show{ display: block; }
+  .output.ok{ background: #f0fdf4; border-left: 5px solid var(--ok); color: #064e3b; }
+  .output.fail{ background: #fff5f5; border-left: 5px solid var(--danger); color: #7f1d1d; }
+  .output.warn{ background: #fef9e7; border-left: 5px solid var(--warn); color: #78350f; }
+  .output .label{
+    display: inline-block; font-weight: 700;
+    padding: .1rem .55rem; border-radius: 6px;
+    margin-bottom: .4rem; font-size: .8rem;
+  }
+  .output.ok .label{ background: var(--ok); color: #fff; }
+  .output.fail .label{ background: var(--danger); color: #fff; }
+  .output.warn .label{ background: var(--warn); color: #fff; }
+  .output pre{
+    background: #0f172a; color: #e2e8f0;
+    padding: .6rem .8rem; border-radius: 8px;
+    margin-top: .4rem; font-family: 'JetBrains Mono', monospace;
+    font-size: .85rem; overflow-x: auto; white-space: pre-wrap;
+  }
+
+  .hint-box{
+    display: none; margin-top: .6rem; background: #fef9e7;
+    border-left: 5px solid var(--warn); border-radius: 10px;
+    padding: .8rem 1rem; color: #78350f; font-size: .95rem;
+  }
+  .hint-box.show{ display: block; }
+  .hint-box ol{ padding-left: 1.4rem; margin-top: .3rem; }
+  .hint-box li{ margin-bottom: .3rem; }
+
+  .solution-box{
+    display: none; margin-top: .6rem; background: #ecfdf5;
+    border-left: 5px solid var(--ok); border-radius: 10px;
+    padding: .8rem 1rem; color: #064e3b; font-size: .95rem;
+  }
+  .solution-box.show{ display: block; }
+  .solution-box pre{
+    background: #0f172a; color: #e2e8f0;
+    padding: .7rem .9rem; border-radius: 8px;
+    margin-top: .5rem; font-family: 'JetBrains Mono', monospace;
+    font-size: .88rem; overflow-x: auto; white-space: pre-wrap;
+  }
+
+  .badge-solved{
+    background: var(--ok); color: #fff; font-size: .8rem;
+    padding: .2rem .7rem; border-radius: 999px; font-weight: 700;
+  }
+
+  .footer-note{
+    text-align: center; color: var(--muted);
+    font-size: .88rem; margin: 2rem 0 1rem;
+  }
+
+  @media (max-width: 600px){
+    body{ padding: 1rem .6rem; }
+    header.top{ padding: 1.1rem 1.2rem; }
+    header.top h1{ font-size: 1.15rem; }
+    .task{ padding: 1.1rem 1rem; }
+    .task-title{ font-size: 1rem; }
+    .editor-wrap{ font-size: 13px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <h1>🐍 Занятие 3. Переменные и ввод данных — 20 задач</h1>
+    <p>Код запускается прямо в браузере. Проверка сверяет реальный вывод с ожидаемым.</p>
+  </header>
+
+  <div class="status-bar">
+    <div class="prog">Решено: <span id="solvedCount">0</span> / <span id="totalCount">0</span></div>
+    <div class="badge-info">Tab = 4 пробела · Ctrl+Enter = запуск</div>
+  </div>
+
+  <div class="filter-bar" id="filterBar">
+    <b>Фильтр:</b>
+    <button data-filter="all" class="active">Все</button>
+    <button data-filter="1">Легко</button>
+    <button data-filter="2">Средне</button>
+    <button data-filter="3">Сложно</button>
+    <button data-filter="solved">Решённые</button>
+    <button data-filter="unsolved">Не решённые</button>
+  </div>
+
+  <div id="tasks"></div>
+
+  <div class="footer-note">Совет: сначала попробуй сам, потом смотри подсказки. Решение откроется только после победы.</div>
+</div>
+
+<script>
+/* =============================================================
+   МИНИ-ИНТЕРПРЕТАТОР PYTHON (JavaScript) — с поддержкой типов
+   ============================================================= */
+function runPythonMini(code, stdinLines){
+  stdinLines = stdinLines || [];
+  let stdinIndex = 0;
+
+  const output = [];
+  const vars = Object.create(null);
+  const floatVars = new Set(); // переменные, которые хранят float
+
+  function pyRepr(v, forceFloat = false){
+    if (typeof v === 'string') return v;
+    if (typeof v === 'boolean') return v ? 'True' : 'False';
+    if (typeof v === 'number') {
+      if (forceFloat) {
+        if (!Number.isInteger(v)) return String(v);
+        return v.toFixed(1); // 6 -> "6.0"
+      }
+      return String(v);
+    }
+    if (v === null || v === undefined) return 'None';
+    return String(v);
+  }
+
+  // Помечаем переменную как float, если она результат деления или float()
+  function setVar(name, val, isFloat = false) {
+    vars[name] = val;
+    if (isFloat) floatVars.add(name);
+    else floatVars.delete(name);
+  }
+
+  function prepareExpr(expr){
+    let jsExpr = expr;
+
+    // ** → Math.pow(a, b)
+    let prev;
+    do {
+      prev = jsExpr;
+      jsExpr = jsExpr.replace(
+        /(-?\d+\.?\d*|[A-Za-z_]\w*|\([^()]*\))\s*\*\*\s*(-?\d+\.?\d*|[A-Za-z_]\w*|\([^()]*\))/g,
+        'Math.pow($1, $2)'
+      );
+    } while (jsExpr !== prev);
+
+    // // → Math.trunc(a / b)
+    do {
+      prev = jsExpr;
+      jsExpr = jsExpr.replace(
+        /(-?\d+\.?\d*|[A-Za-z_]\w*|\([^()]*\))\s*\/\/\s*(-?\d+\.?\d*|[A-Za-z_]\w*|\([^()]*\))/g,
+        'Math.trunc($1 / $2)'
+      );
+    } while (jsExpr !== prev);
+
+    // Встроенные функции
+    jsExpr = jsExpr.replace(/\bint\s*\(/g, '__int(');
+    jsExpr = jsExpr.replace(/\bfloat\s*\(/g, '__float(');
+    jsExpr = jsExpr.replace(/\bstr\s*\(/g, '__str(');
+    jsExpr = jsExpr.replace(/\babs\s*\(/g, 'Math.abs(');
+    jsExpr = jsExpr.replace(/\bround\s*\(/g, '__round(');
+    jsExpr = jsExpr.replace(/\blen\s*\(/g, '__len(');
+    jsExpr = jsExpr.replace(/\binput\s*\(\s*\)/g, '__input()');
+
+    return jsExpr;
+  }
+
+  function safeEval(expr, forceFloat = false){
+    const jsExpr = prepareExpr(expr);
+    const names = Object.keys(vars);
+    const values = names.map(n => vars[n]);
+
+    try {
+      const fn = new Function(
+        ...names,
+        '__pow', '__int', '__float', '__str', '__round', '__len', '__input',
+        `"use strict";
+         try { return (${jsExpr}); }
+         catch(e){ throw new Error("Не могу вычислить: " + e.message); }`
+      );
+      let result = fn(
+        ...values,
+        (a,b) => Math.pow(a,b),
+        (x) => {
+          if (typeof x === 'string'){
+            const n = parseFloat(x);
+            if (isNaN(n)) throw new Error('int() от нечисла: ' + x);
+            return Math.trunc(n);
+          }
+          return Math.trunc(Number(x));
+        },
+        (x) => Number(x),
+        (x) => pyRepr(x, floatVars.has(expr.trim())),
+        (x) => Math.round(x),
+        (x) => (x == null) ? 0 : (typeof x === 'string' ? x.length : (Array.isArray(x) ? x.length : 0)),
+        () => {
+          if (stdinIndex >= stdinLines.length) return '';
+          return stdinLines[stdinIndex++];
+        }
+      );
+      
+      // Если выражение содержит деление / и это не целочисленное //, считаем float
+      if (/[^/]\/[^/]/.test(jsExpr)) forceFloat = true;
+      // float() всегда даёт float
+      if (/^__float\(/.test(jsExpr)) forceFloat = true;
+      
+      return { value: result, isFloat: forceFloat || !Number.isInteger(result) || /\./.test(jsExpr) && !jsExpr.includes('__int') };
+    } catch (e) {
+      throw new Error('Ошибка в выражении «' + expr + '»: ' + e.message);
+    }
+  }
+
+  function parseFString(raw){
+    // Поддержка форматов: {expr:02d}, {expr:.2f}, {expr}
+    return raw.replace(/\{([^{}:]+)(?::([^{}]+))?\}/g, (_, expr, fmt) => {
+      const evalRes = safeEval(expr);
+      let val = evalRes.value;
+      
+      if (fmt) {
+        // 02d — целое с ведущим нулём
+        const intFmt = fmt.match(/^0?(\d+)d$/);
+        if (intFmt) {
+          const w = parseInt(intFmt[1], 10);
+          let s = String(Math.round(Number(val)));
+          if (s.length < w) s = '0'.repeat(w - s.length) + s;
+          return s;
+        }
+        // .2f — дробное с фикс. точностью
+        const floatFmt = fmt.match(/^\.(\d+)f$/);
+        if (floatFmt) {
+          return Number(val).toFixed(parseInt(floatFmt[1], 10));
+        }
+      }
+      
+      // Если это float-переменная или результат float-выражения
+      return pyRepr(val, evalRes.isFloat);
+    });
+  }
+
+  function splitTopLevel(s, sep){
+    sep = sep || ',';
+    const parts = [];
+    let depth = 0, quote = null, buf = '';
+    for (let i = 0; i < s.length; i++){
+      const ch = s[i];
+      if (quote){
+        buf += ch;
+        if (ch === quote && s[i-1] !== '\\') quote = null;
+        continue;
+      }
+      if (ch === '"' || ch === "'"){ quote = ch; buf += ch; continue; }
+      if (ch === '(' || ch === '[' || ch === '{'){ depth++; buf += ch; continue; }
+      if (ch === ')' || ch === ']' || ch === '}'){ depth--; buf += ch; continue; }
+      if (ch === sep && depth === 0){ parts.push(buf); buf = ''; continue; }
+      buf += ch;
+    }
+    if (buf !== '' || parts.length) parts.push(buf);
+    return parts;
+  }
+
+  const lines = code.split('\n');
+
+  for (let rawLine of lines){
+    let line = rawLine;
+
+    // Убираем комментарии
+    {
+      let inQ = null, cut = -1;
+      for (let i = 0; i < line.length; i++){
+        const c = line[i];
+        if (inQ){ if (c === inQ) inQ = null; continue; }
+        if (c === '"' || c === "'"){ inQ = c; continue; }
+        if (c === '#'){ cut = i; break; }
+      }
+      if (cut >= 0) line = line.slice(0, cut);
+    }
+
+    const trimmed = line.trim();
+    if (!trimmed) continue;
+
+    // print(...)
+    const printMatch = trimmed.match(/^print\s*\((.*)\)\s*;?\s*$/s);
+    if (printMatch){
+      const inner = printMatch[1];
+      if (!inner.trim()){
+        output.push('');
+        continue;
+      }
+      const args = splitTopLevel(inner, ',');
+      const parts = args.map(arg => {
+        const a = arg.trim();
+        if (!a) return '';
+        const fm = a.match(/^[fF](['"])([\s\S]*)\1$/);
+        if (fm) return parseFString(fm[2]);
+        
+        const res = safeEval(a);
+        return pyRepr(res.value, res.isFloat);
+      });
+      output.push(parts.join(' '));
+      continue;
+    }
+
+    // Обмен двух переменных: a, b = b, a
+    const swapMatch = trimmed.match(/^([A-Za-z_]\w*)\s*,\s*([A-Za-z_]\w*)\s*=\s*([A-Za-z_]\w*)\s*,\s*([A-Za-z_]\w*)$/);
+    if (swapMatch){
+      const [, a, b, c, d] = swapMatch;
+      if (!(c in vars) || !(d in vars)){
+        throw new Error('Переменная не определена при обмене: ' + trimmed);
+      }
+      const tmpA = vars[c], tmpB = vars[d];
+      const fA = floatVars.has(c), fB = floatVars.has(d);
+      setVar(a, tmpA, fA);
+      setVar(b, tmpB, fB);
+      continue;
+    }
+
+    // Присваивание
+    const assignMatch = trimmed.match(/^([A-Za-z_]\w*)\s*=\s*(.+)$/s);
+    if (assignMatch){
+      const name = assignMatch[1];
+      const exprRaw = assignMatch[2].trim();
+
+      const fm = exprRaw.match(/^[fF](['"])([\s\S]*)\1$/);
+      if (fm){
+        setVar(name, parseFString(fm[2]), false);
+        continue;
+      }
+
+      try {
+        const res = safeEval(exprRaw);
+        setVar(name, res.value, res.isFloat);
+      } catch (e){
+        throw new Error('Строка «' + trimmed + '»: ' + e.message);
+      }
+      continue;
+    }
+
+    throw new Error('Не понимаю строку: «' + trimmed + '». Поддерживаются присваивания, print() и арифметика.');
+  }
+
+  return output.join('\n');
+}
+
+/* =============================================================
+   БАЗА ЗАДАЧ (20 штук)
+   ============================================================= */
+const TASKS = [
+  { id:1, difficulty:1,
+    title:"Приветствие",
+    desc:'Создай переменную <code>name</code> со значением <code>"Алекс"</code>. Выведи строку: <code>Привет, Алекс!</code>',
+    stdin:"",
+    expectedOutput:"Привет, Алекс!",
+    hints:[
+      "Переменная создаётся так: <code>имя = значение</code>.",
+      "Строка пишется в кавычках: <code>name = \"Алекс\"</code>.",
+      "Склей две строки через <code>+</code>: <code>\"Привет, \" + name + \"!\"</code>."
+    ],
+    solution:'name = "Алекс"\nprint("Привет, " + name + "!")',
+    starter:'# Создай переменную name и выведи приветствие\n' },
+
+  { id:2, difficulty:1,
+    title:"Сумма двух чисел",
+    desc:'Создай <code>a = 5</code> и <code>b = 3</code>. Выведи: <code>5 + 3 = 8</code>',
+    stdin:"",
+    expectedOutput:"5 + 3 = 8",
+    hints:[
+      "Числа хранятся в переменных без кавычек.",
+      "f-строка начинается с <code>f</code>: <code>f\"текст {выражение}\"</code>.",
+      "Подставь в f-строку сами переменные и их сумму: <code>f\"{a} + {b} = {a + b}\"</code>."
+    ],
+    solution:'a = 5\nb = 3\nprint(f"{a} + {b} = {a + b}")',
+    starter:'a = 5\nb = 3\n# Выведи через f-строку\n' },
+
+  { id:3, difficulty:1,
+    title:"Возраст",
+    desc:'Создай <code>age = 15</code>. Выведи: <code>Мне 15 лет</code>',
+    stdin:"",
+    expectedOutput:"Мне 15 лет",
+    hints:[
+      "f-строка подставляет значения переменных в фигурных скобках.",
+      "Формат: <code>f\"Мне {age} лет\"</code>."
+    ],
+    solution:'age = 15\nprint(f"Мне {age} лет")',
+    starter:'age = 15\n' },
+
+  { id:4, difficulty:1,
+    title:"Обмен значений",
+    desc:'Даны <code>x = 10</code> и <code>y = 20</code>. Поменяй местами и выведи:<br><code>x = 20</code><br><code>y = 10</code>',
+    stdin:"",
+    expectedOutput:"x = 20\ny = 10",
+    hints:[
+      "В Python обмен делается одной строкой: <code>x, y = y, x</code>.",
+      "Выведи каждую переменную через f-строку.",
+      "Формат: <code>f\"x = {x}\"</code> и <code>f\"y = {y}\"</code>."
+    ],
+    solution:'x = 10\ny = 20\nx, y = y, x\nprint(f"x = {x}")\nprint(f"y = {y}")',
+    starter:'x = 10\ny = 20\n# Поменяй местами и выведи\n' },
+
+  { id:5, difficulty:2,
+    title:"Ввод имени",
+    desc:'Запроси имя через <code>input()</code>, выведи: <code>Привет, [имя]!</code><br>Тестовое имя: <code>Мария</code>',
+    stdin:"Мария",
+    expectedOutput:"Привет, Мария!",
+    hints:[
+      "<code>input()</code> возвращает строку.",
+      "Сохрани результат: <code>name = input()</code>.",
+      "Собери приветствие через f-строку: <code>f\"Привет, {name}!\"</code>."
+    ],
+    solution:'name = input()\nprint(f"Привет, {name}!")',
+    starter:'# Запроси имя и выведи приветствие\n' },
+
+  { id:6, difficulty:2,
+    title:"Сумма из ввода",
+    desc:'Запроси два числа через <code>input()</code>, выведи сумму.<br>Тестовые данные: <code>7</code> и <code>8</code> → <code>15</code>.',
+    stdin:"7\n8",
+    expectedOutput:"15",
+    hints:[
+      "<code>input()</code> возвращает строку. <code>\"7\" + \"8\"</code> = <code>\"78\"</code>, а не <code>15</code>.",
+      "Оберни каждый ввод в <code>int()</code>: <code>int(input())</code>.",
+      "Сложи два числа и выведи."
+    ],
+    solution:'a = int(input())\nb = int(input())\nprint(a + b)',
+    starter:'# Введи два числа и выведи сумму\n' },
+
+  { id:7, difficulty:2,
+    title:"Периметр прямоугольника",
+    desc:'Запроси ширину и высоту (целые), выведи периметр <code>2*(a+b)</code>.<br>Тестовые данные: <code>4</code> и <code>6</code> → <code>20</code>.',
+    stdin:"4\n6",
+    expectedOutput:"20",
+    hints:[
+      "Считай два числа через <code>int(input())</code>.",
+      "Периметр: <code>2 * (a + b)</code>. Скобки обязательны.",
+      "Выведи результат."
+    ],
+    solution:'a = int(input())\nb = int(input())\nprint(2 * (a + b))',
+    starter:'# Периметр прямоугольника\n' },
+
+  { id:8, difficulty:2,
+    title:"Среднее арифметическое",
+    desc:'Запроси три числа, выведи среднее.<br>Тестовые данные: <code>3</code>, <code>6</code>, <code>9</code> → <code>6.0</code>.',
+    stdin:"3\n6\n9",
+    expectedOutput:"6.0",
+    hints:[
+      "Среднее = сумма / количество.",
+      "Оператор <code>/</code> в Python всегда даёт дробное.",
+      "<code>(a + b + c) / 3</code>."
+    ],
+    solution:'a = float(input())\nb = float(input())\nc = float(input())\nprint((a + b + c) / 3)',
+    starter:'# Среднее трёх чисел\n' },
+
+  { id:9, difficulty:2,
+    title:"Обмен через ввод",
+    desc:'Запроси <code>a</code> и <code>b</code>, поменяй местами, выведи:<br><code>a = [новое]</code><br><code>b = [новое]</code><br>Тестовые данные: <code>1</code> и <code>2</code> → <code>a = 2</code>, <code>b = 1</code>.',
+    stdin:"1\n2",
+    expectedOutput:"a = 2\nb = 1",
+    hints:[
+      "Считай два числа через <code>int(input())</code>.",
+      "Обмен: <code>a, b = b, a</code>.",
+      "Выведи через f-строки."
+    ],
+    solution:'a = int(input())\nb = int(input())\na, b = b, a\nprint(f"a = {a}")\nprint(f"b = {b}")',
+    starter:'# Обмен через ввод\n' },
+
+  { id:10, difficulty:2,
+    title:"Конвертер температуры",
+    desc:'Запроси °C (дробное), выведи °F: <code>F = C * 9 / 5 + 32</code>.<br>Тестовые данные: <code>0</code> → <code>32.0</code>.',
+    stdin:"0",
+    expectedOutput:"32.0",
+    hints:[
+      "Считай <code>float(input())</code>.",
+      "Порядок операций: сначала умножение и деление, потом сложение.",
+      "Формула: <code>c * 9 / 5 + 32</code>."
+    ],
+    solution:'c = float(input())\nf = c * 9 / 5 + 32\nprint(f)',
+    starter:'# Конвертер °C в °F\n' },
+
+  { id:11, difficulty:3,
+    title:"Площадь круга",
+    desc:'Запроси радиус, выведи площадь <code>π * r²</code> с точностью до 2 знаков, <code>π ≈ 3.14159</code>.<br>Тестовые данные: <code>2</code> → <code>12.57</code>.',
+    stdin:"2",
+    expectedOutput:"12.57",
+    hints:[
+      "Степень — <code>**</code>: <code>r ** 2</code>.",
+      "Заведи <code>pi = 3.14159</code>.",
+      "Округление: <code>round(значение, 2)</code>."
+    ],
+    solution:'r = float(input())\npi = 3.14159\ns = pi * r ** 2\nprint(round(s, 2))',
+    starter:'# Площадь круга\n' },
+
+  { id:12, difficulty:3,
+    title:"Деление с остатком",
+    desc:'Запроси два целых, выведи:<br><code>Частное: [a // b]</code><br><code>Остаток: [a % b]</code><br>Тестовые данные: <code>17</code> и <code>5</code> → <code>Частное: 3</code>, <code>Остаток: 2</code>.',
+    stdin:"17\n5",
+    expectedOutput:"Частное: 3\nОстаток: 2",
+    hints:[
+      "<code>//</code> — целочисленное деление, <code>%</code> — остаток.",
+      "<code>17 // 5 = 3</code>, <code>17 % 5 = 2</code>.",
+      "Две f-строки: <code>f\"Частное: {a // b}\"</code> и <code>f\"Остаток: {a % b}\"</code>."
+    ],
+    solution:'a = int(input())\nb = int(input())\nprint(f"Частное: {a // b}")\nprint(f"Остаток: {a % b}")',
+    starter:'# Частное и остаток\n' },
+
+  { id:13, difficulty:3,
+    title:"Стоимость покупки",
+    desc:'Запроси цену и количество (целое), выведи:<br><code>Итого: [цена * кол-во] руб.</code><br>Тестовые данные: <code>150</code> и <code>3</code> → <code>Итого: 450 руб.</code>',
+    stdin:"150\n3",
+    expectedOutput:"Итого: 450 руб.",
+    hints:[
+      "Цена — <code>float()</code>, количество — <code>int()</code>.",
+      "Перемножь: <code>price * qty</code>.",
+      "Чтобы убрать <code>.0</code>, оберни в <code>int()</code> внутри f-строки."
+    ],
+    solution:'price = float(input())\nqty = int(input())\ntotal = price * qty\nprint(f"Итого: {int(total)} руб.")',
+    starter:'# Стоимость покупки\n' },
+
+  { id:14, difficulty:3,
+    title:"Стоимость со скидкой",
+    desc:'Запроси цену и скидку (%), выведи итог: <code>цена * (1 - скидка/100)</code>.<br>Тестовые данные: <code>200</code> и <code>10</code> → <code>180.0</code>.',
+    stdin:"200\n10",
+    expectedOutput:"180.0",
+    hints:[
+      "10% = <code>10/100 = 0.1</code>, платим <code>1 - 0.1 = 0.9</code>.",
+      "Скобки: <code>(1 - discount / 100)</code>.",
+      "Умножь цену на коэффициент."
+    ],
+    solution:'price = float(input())\ndiscount = float(input())\nfinal = price * (1 - discount / 100)\nprint(final)',
+    starter:'# Стоимость со скидкой\n' },
+
+  { id:15, difficulty:2,
+    title:"Часы и минуты",
+    desc:'Запроси минуты (целое), выведи:<br><code>[часы] ч [минуты] мин</code><br>Тестовые данные: <code>135</code> → <code>2 ч 15 мин</code>.',
+    stdin:"135",
+    expectedOutput:"2 ч 15 мин",
+    hints:[
+      "Часы — <code>m // 60</code>, остаток — <code>m % 60</code>.",
+      "<code>135 // 60 = 2</code>, <code>135 % 60 = 15</code>.",
+      "Собери f-строку: <code>f\"{h} ч {mm} мин\"</code>."
+    ],
+    solution:'m = int(input())\nh = m // 60\nmm = m % 60\nprint(f"{h} ч {mm} мин")',
+    starter:'# Минуты в часы и минуты\n' },
+
+  { id:16, difficulty:3,
+    title:"Обмен через третью переменную",
+    desc:'Запроси <code>a</code> и <code>b</code>, обменяй <b>через <code>tmp</code></b>, выведи:<br><code>a = ..., b = ...</code><br>Тестовые данные: <code>3</code> и <code>7</code> → <code>a = 7, b = 3</code>.',
+    stdin:"3\n7",
+    expectedOutput:"a = 7, b = 3",
+    hints:[
+      "Классический обмен: <code>tmp = a; a = b; b = tmp</code>.",
+      "Сначала сохраняем <code>a</code> в <code>tmp</code>, иначе старое значение потеряется.",
+      "Выведи одной f-строкой: <code>f\"a = {a}, b = {b}\"</code>."
+    ],
+    solution:'a = int(input())\nb = int(input())\ntmp = a\na = b\nb = tmp\nprint(f"a = {a}, b = {b}")',
+    starter:'# Обмен через tmp\n' },
+
+  { id:17, difficulty:3,
+    title:"Расстояние между точками",
+    desc:'Запроси <code>x1,y1,x2,y2</code> (дробные), выведи расстояние с 3 знаками: <code>√((x2-x1)²+(y2-y1)²)</code>.<br>Тестовые данные: <code>0 0 3 4</code> → <code>5.0</code>.',
+    stdin:"0\n0\n3\n4",
+    expectedOutput:"5.0",
+    hints:[
+      "Корень — возведение в степень <code>0.5</code>: <code>число ** 0.5</code>.",
+      "Квадрат разности: <code>(x2 - x1) ** 2</code> — скобки обязательны.",
+      "Округление до 3 знаков: <code>round(..., 3)</code>."
+    ],
+    solution:'x1 = float(input())\ny1 = float(input())\nx2 = float(input())\ny2 = float(input())\nd = ((x2 - x1) ** 2 + (y2 - y1) ** 2) ** 0.5\nprint(round(d, 3))',
+    starter:'# Расстояние между точками\n' },
+
+  { id:18, difficulty:3,
+    title:"Секунды в ЧЧ:ММ:СС",
+    desc:'Запроси секунды (целое), выведи <code>ЧЧ:ММ:СС</code>.<br>Тестовые данные: <code>3725</code> → <code>01:02:05</code>.',
+    stdin:"3725",
+    expectedOutput:"01:02:05",
+    hints:[
+      "Сначала получи минуты: <code>s // 60</code>, секунды: <code>s % 60</code>.",
+      "Потом из минут часы: <code>m // 60</code>, остаток минут: <code>m % 60</code>.",
+      "Ведущий ноль в f-строке: <code>{x:02d}</code>."
+    ],
+    solution:'s = int(input())\nh = s // 3600\nm = (s % 3600) // 60\nsec = s % 60\nprint(f"{h:02d}:{m:02d}:{sec:02d}")',
+    starter:'# Секунды в ЧЧ:ММ:СС\n' },
+
+  { id:19, difficulty:3,
+    title:"Сложный процент",
+    desc:'Запроси сумму, ставку (%), годы (целое), выведи итог с 2 знаками: <code>сумма * (1 + ставка/100) ** годы</code>.<br>Тестовые данные: <code>1000</code>, <code>10</code>, <code>2</code> → <code>1210.0</code>.',
+    stdin:"1000\n10\n2",
+    expectedOutput:"1210.0",
+    hints:[
+      "Сложный процент — это степень <code>** годы</code>.",
+      "Скобки: <code>(1 + rate / 100)</code> — сначала деление, потом прибавление к 1.",
+      "Округление: <code>round(..., 2)</code>."
+    ],
+    solution:'amount = float(input())\nrate = float(input())\nyears = int(input())\ntotal = amount * (1 + rate / 100) ** years\nprint(round(total, 2))',
+    starter:'# Сложный процент\n' },
+
+  { id:20, difficulty:3,
+    title:"Размен монет",
+    desc:'Запроси сумму (целое), разменяй минимальным числом монет 10, 5, 1:<br><code>10: [n10]</code><br><code>5: [n5]</code><br><code>1: [n1]</code><br>Тестовые данные: <code>37</code> → <code>10: 3</code>, <code>5: 1</code>, <code>1: 2</code>.',
+    stdin:"37",
+    expectedOutput:"10: 3\n5: 1\n1: 2",
+    hints:[
+      "Жадный алгоритм: берём максимально крупные монеты.",
+      "Для 10: <code>n10 = s // 10</code>, остаток: <code>s = s % 10</code>.",
+      "Затем то же для 5 и 1. Не забудь обновлять <code>s</code>."
+    ],
+    solution:'s = int(input())\nn10 = s // 10\ns = s % 10\nn5 = s // 5\ns = s % 5\nn1 = s\nprint(f"10: {n10}")\nprint(f"5: {n5}")\nprint(f"1: {n1}")',
+    starter:'# Размен монет\n' }
+];
+
+/* =============================================================
+   Отрисовка карточек
+   ============================================================= */
+const tasksEl = document.getElementById('tasks');
+const solvedCountEl = document.getElementById('solvedCount');
+const totalCountEl = document.getElementById('totalCount');
+const solvedSet = new Set();
+
+totalCountEl.textContent = TASKS.length;
+
+TASKS.forEach(t => {
+  const hintsHTML = t.hints.map(h => `<li>${h}</li>`).join('');
+  const diffClass = 'diff-' + t.difficulty;
+  const diffLabel = ['', 'Легко', 'Средне', 'Сложно'][t.difficulty];
+  const hasStdin = t.stdin && t.stdin.length > 0;
+
+  const div = document.createElement('div');
+  div.className = 'task';
+  div.id = 'task-' + t.id;
+  div.dataset.difficulty = t.difficulty;
+  div.innerHTML = `
+    <div class="task-head">
+      <div class="task-title">
+        <span class="num">${t.id}</span>
+        ${t.title}
+        <span class="difficulty ${diffClass}">${diffLabel}</span>
+        ${hasStdin ? '<span class="tag-input">с вводом</span>' : ''}
+      </div>
+      <div id="badge-${t.id}"></div>
+    </div>
+    <div class="task-desc">${t.desc}</div>
+    <div class="io-block">
+      <div><b>Ожидаемый вывод:</b></div>
+      <pre>${escapeHtml(t.expectedOutput)}</pre>
+    </div>
+
+    ${hasStdin ? `
+      <div class="stdin-block">
+        <label>Ввод (stdin) — по одному значению на строку:</label>
+        <textarea id="stdin-${t.id}" spellcheck="false">${escapeHtml(t.stdin)}</textarea>
+      </div>
+    ` : ''}
+
+    <div class="editor-wrap">
+      <div class="line-numbers" id="lines-${t.id}">1</div>
+      <textarea id="editor-${t.id}" spellcheck="false" autocomplete="off" autocorrect="off" autocapitalize="off">${escapeHtml(t.starter)}</textarea>
+    </div>
+
+    <div class="actions">
+      <button class="primary" data-run="${t.id}">▶ Запустить</button>
+      <button class="ghost" data-reset="${t.id}">↺ Сбросить</button>
+      <button class="hint-btn" data-hint="${t.id}">💡 Подсказки (${t.hints.length})</button>
+      <button class="ghost" data-solution="${t.id}" style="display:none">📖 Показать решение</button>
+    </div>
+
+    <div class="hint-box" id="hint-${t.id}">
+      <b>Подсказки — читай по одной:</b>
+      <ol>${hintsHTML}</ol>
+    </div>
+
+    <div class="output" id="out-${t.id}"></div>
+
+    <div class="solution-box" id="sol-${t.id}">
+      <b>Пример решения:</b>
+      <pre>${escapeHtml(t.solution)}</pre>
+    </div>
+  `;
+  tasksEl.appendChild(div);
+});
+
+function escapeHtml(s){
+  return String(s)
+    .replaceAll('&','&amp;')
+    .replaceAll('<','&lt;')
+    .replaceAll('>','&gt;')
+    .replaceAll('"','&quot;');
+}
+
+/* =============================================================
+   Редакторы
+   ============================================================= */
+window.addEventListener('DOMContentLoaded', () => {
+  TASKS.forEach(t => {
+    const ta = document.getElementById('editor-' + t.id);
+    const lines = document.getElementById('lines-' + t.id);
+
+    const updateLines = () => {
+      const count = ta.value.split('\n').length;
+      let s = '';
+      for (let i = 1; i <= count; i++) s += i + '\n';
+      lines.textContent = s.replace(/\n$/, '');
+    };
+    const autosize = () => {
+      ta.style.height = 'auto';
+      ta.style.height = Math.max(130, ta.scrollHeight) + 'px';
+    };
+
+    ta.addEventListener('input', () => { updateLines(); autosize(); });
+    ta.addEventListener('scroll', () => { lines.scrollTop = ta.scrollTop; });
+
+    ta.addEventListener('keydown', (e) => {
+      if (e.key === 'Tab'){
+        e.preventDefault();
+        const start = ta.selectionStart;
+        const end = ta.selectionEnd;
+        ta.value = ta.value.substring(0, start) + '    ' + ta.value.substring(end);
+        ta.selectionStart = ta.selectionEnd = start + 4;
+        updateLines(); autosize();
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter'){
+        e.preventDefault();
+        runTask(t.id);
+      }
+    });
+
+    updateLines(); autosize();
+  });
+
+  tasksEl.addEventListener('click', (e) => {
+    const run = e.target.closest('[data-run]');
+    if (run) return runTask(parseInt(run.dataset.run, 10));
+
+    const reset = e.target.closest('[data-reset]');
+    if (reset){
+      const id = parseInt(reset.dataset.reset, 10);
+      const t = TASKS.find(x => x.id === id);
+      const ta = document.getElementById('editor-' + id);
+      ta.value = t.starter;
+      ta.dispatchEvent(new Event('input'));
+      const out = document.getElementById('out-' + id);
+      out.className = 'output'; out.innerHTML = '';
+      return;
+    }
+
+    const hint = e.target.closest('[data-hint]');
+    if (hint){
+      const id = parseInt(hint.dataset.hint, 10);
+      document.getElementById('hint-' + id).classList.toggle('show');
+      return;
+    }
+
+    const sol = e.target.closest('[data-solution]');
+    if (sol){
+      const id = parseInt(sol.dataset.solution, 10);
+      document.getElementById('sol-' + id).classList.toggle('show');
+      return;
+    }
+  });
+
+  document.getElementById('filterBar').addEventListener('click', (e) => {
+    const b = e.target.closest('button[data-filter]');
+    if (!b) return;
+    document.querySelectorAll('#filterBar button').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    const f = b.dataset.filter;
+    document.querySelectorAll('.task').forEach(task => {
+      const id = parseInt(task.id.replace('task-',''));
+      const diff = task.dataset.difficulty;
+      const solved = solvedSet.has(id);
+      let show = true;
+      if (f === 'all') show = true;
+      else if (f === 'solved') show = solved;
+      else if (f === 'unsolved') show = !solved;
+      else show = diff === f;
+      task.classList.toggle('hidden', !show);
+    });
+  });
+});
+
+/* =============================================================
+   Запуск и проверка
+   ============================================================= */
+function runTask(id){
+  const t = TASKS.find(x => x.id === id);
+  const out = document.getElementById('out-' + id);
+  const code = document.getElementById('editor-' + id).value;
+
+  if (!code.trim()){
+    out.className = 'output show warn';
+    out.innerHTML = `<span class="label">Пусто</span>Напиши код в редакторе.`;
+    return;
+  }
+
+  const stdinEl = document.getElementById('stdin-' + id);
+  const stdinText = stdinEl ? stdinEl.value : (t.stdin || "");
+  const stdinLines = stdinText.split('\n');
+  if (stdinLines.length && stdinLines[stdinLines.length - 1] === '') stdinLines.pop();
+
+  let actual;
+  try {
+    actual = runPythonMini(code, stdinLines);
+  } catch (e){
+    out.className = 'output show fail';
+    out.innerHTML = `<span class="label">Ошибка в коде</span>${escapeHtml(e.message)}`;
+    return;
+  }
+
+  const normalize = s => String(s).replace(/\r\n/g, '\n').replace(/[ \t]+$/gm, '').trim();
+  const got = normalize(actual);
+  const want = normalize(t.expectedOutput);
+
+  if (got === want){
+    out.className = 'output show ok';
+    out.innerHTML =
+      `<span class="label">Верно!</span>` +
+      `Вывод программы:<pre>${escapeHtml(got)}</pre>`;
+    markSolved(id);
+  } else {
+    out.className = 'output show fail';
+    out.innerHTML =
+      `<span class="label">Не совпало</span>` +
+      `Вывод твоей программы:<pre>${escapeHtml(got || '(пусто)')}</pre>` +
+      `Ожидалось:<pre>${escapeHtml(want)}</pre>`;
+  }
+}
+
+function markSolved(id){
+  if (solvedSet.has(id)) return;
+  solvedSet.add(id);
+  document.getElementById('task-' + id).classList.add('solved');
+  document.getElementById('badge-' + id).innerHTML =
+    `<span class="badge-solved">✓ решено</span>`;
+  const solBtn = document.querySelector(`[data-solution="${id}"]`);
+  if (solBtn) solBtn.style.display = 'inline-block';
+  solvedCountEl.textContent = solvedSet.size;
+}
+</script>
+</body>
+</html>
